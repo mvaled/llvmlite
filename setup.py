@@ -16,8 +16,6 @@ if os.environ.get('READTHEDOCS', None) == 'True':
     sys.exit("setup.py disabled on readthedocs: called with %s"
              % (sys.argv,))
 
-from llvmlite.utils import get_library_files
-
 import versioneer
 
 versioneer.VCS = 'git'
@@ -54,6 +52,7 @@ class LlvmliteBuild(build):
 class LlvmliteBuildExt(build_ext):
 
     def run(self):
+        from llvmlite.utils import get_library_files
         build_ext.run(self)
         cmd = [sys.executable, os.path.join(here_dir, 'ffi', 'build.py')]
         spawn(cmd, dry_run=self.dry_run)
@@ -68,6 +67,7 @@ class LlvmliteInstall(install):
     # Ensure install see the libllvmlite shared library
     # This seems to only be necessary on OSX.
     def run(self):
+        from llvmlite.utils import get_library_files
         self.distribution.package_data = {
             "llvmlite.binding": get_library_files(),
         }
@@ -87,8 +87,10 @@ packages = ['llvmlite',
             ]
 
 install_requires = []
+setup_requires = []
 if sys.version_info < (3, 4):
     install_requires.append('enum34')
+    setup_requires.append('enum34')
 
 setup(name='llvmlite',
       description="lightweight wrapper around basic LLVM functionality",
@@ -111,8 +113,8 @@ setup(name='llvmlite',
       url="http://llvmlite.pydata.org",
       download_url="https://github.com/numba/llvmlite",
       packages=packages,
+      setup_requires=setup_requires,
       install_requires=install_requires,
       license="BSD",
       cmdclass=cmdclass,
       )
-
